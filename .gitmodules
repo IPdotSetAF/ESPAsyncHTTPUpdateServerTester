@@ -1,0 +1,3 @@
+[submodule "lib/ESPAsyncHTTPUpdateServer"]
+	path = lib/ESPAsyncHTTPUpdateServer
+	url = https://github.com/IPdotSetAF/ESPAsyncHTTPUpdateServer
