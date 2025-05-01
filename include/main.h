@@ -15,6 +15,14 @@
 
 #include <LittleFS.h>
 
+#ifdef ESP32
+  #define KEY 4
+  #define LED 2
+#elif defined(ESP8266)
+  #define KEY 0
+  #define LED 2
+#endif
+
 #define DEBUG
 
 //#define STATION

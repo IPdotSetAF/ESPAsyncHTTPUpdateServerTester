@@ -4,11 +4,20 @@ void listFiles(AsyncWebServerRequest *request)
 {
   String result = "";
 
+#ifdef ESP32
+  File dir = LittleFS.open("/");
+  File file = dir.openNextFile();
+  while (file) {
+    result += String(file.name()) + "\n";
+    file = dir.openNextFile();
+  }
+#else
   Dir dir = LittleFS.openDir("/");
   while (dir.next())
-    result +=dir.fileName() + "\n";
+    result += dir.fileName() + "\n";
+#endif
 
-  request->send(200, "text/plain", "[\n"+result+"]");
+  request->send(200, "text/plain", "[\n" + result + "]");
 }
 
 void notFound(AsyncWebServerRequest *request)
@@ -73,18 +82,34 @@ void setup()
 
   configRoutes(&_server);
   _updateServer.setup(&_server, otaUsername, otaPassword);
+  _updateServer.onUpdateBegin = [](const UpdateType type, int &result)
+  {
+    if (digitalRead(KEY) == HIGH)
+      result = UpdateResult::UPDATE_ABORT;
+    else
+      Serial.println("Update started : " + String(type));
+  };
+  _updateServer.onUpdateEnd = [](const UpdateType type, int &result)
+  {
+    Serial.println("Update finished : " + String(type) + " result: " + String(result));
+  };
   _server.begin();
 
 #ifdef DEBUG
   Serial.println("HTTP server started");
 #endif
 
+  pinMode(LED, OUTPUT);
+  pinMode(KEY, INPUT_PULLUP);
+
+  digitalWrite(LED, LOW);
 }
 
 // MARK:LOOP
 void loop()
 {
- 
+  digitalWrite(LED, digitalRead(KEY) == LOW);
+
   yield();
 #ifdef ESP8266
   MDNS.update();
